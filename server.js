@@ -1,18 +1,23 @@
-const express = require('express')
-const dotenv = require('dotenv')
-const morgan = require('morgan')
-const colors = require('colors')
-const app = express()
-const connectDb = require('./config/db')
+const express = require("express");
+const dotenv = require("dotenv");
+const morgan = require("morgan");
+const colors = require("colors");
+const app = express();
+const connectDb = require("./config/db");
 
-dotenv.config({ path: './config/config.env' })
-connectDb()
+dotenv.config({ path: "./config/config.env" });
+connectDb();
 
-const transactions = require('./routes/transaction')
-app.use(express.json())
-app.use('/api/v1/transactions', transactions)
+const transactions = require("./routes/transaction");
+app.use(express.json());
 
-const PORT = process.env.PORT || 5000
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
+}
+
+app.use("/api/v1/transactions", transactions);
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () =>
   console.log(
@@ -20,4 +25,4 @@ app.listen(PORT, () =>
 on port No ${PORT}
 `.red.bold
   )
-)
+);

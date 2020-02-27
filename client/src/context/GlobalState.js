@@ -1,15 +1,13 @@
 import React, { createContext, useReducer } from "react";
 import AppReducer from "./AppReducer";
+import axios from "axios";
 
 //Intial State
 
 const initialState = {
-  transactions: [
-    { id: 1, text: "Flower", amount: -20 },
-    { id: 2, text: "Salary", amount: 300 },
-    { id: 3, text: "Book", amount: -10 },
-    { id: 4, text: "Camera", amount: 150 }
-  ]
+  transactions: [],
+  error: null,
+  loading: true
 };
 
 export const GlobalContext = createContext(initialState);
@@ -19,26 +17,66 @@ export const GlobalContext = createContext(initialState);
 export const GlobalProvider = ({ children }) => {
   const [state, dispatch] = useReducer(AppReducer, initialState);
 
-  //Actions
-
-  function deleteAction(id) {
-    dispatch({
-      type: "DELETE",
-      payload: id
-    });
+  async function getTransaction() {
+    try {
+      const res = await axios.get("/api/v1/transactions");
+      dispatch({
+        type: "GET",
+        payload: res.data.data
+      });
+    } catch (error) {
+      dispatch({
+        type: "TRANSACTION_ERROR",
+        payload: error.response.data.error
+      });
+    }
   }
 
-  function addAction(transaction) {
-    dispatch({
-      type: "ADD",
-      payload: transaction
-    });
+  //Actions
+
+  async function deleteAction(id) {
+    try {
+      await axios.delete(`/api/v1/transactions/${id}`);
+      dispatch({
+        type: "DELETE",
+        payload: id
+      });
+    } catch (error) {
+      dispatch({
+        type: "TRANSACTION_ERROR",
+        payload: error.response.data.error
+      });
+    }
+  }
+
+  async function addAction(transaction) {
+    const config = {
+      headers: {
+        "Content-type": "application/json"
+      }
+    };
+
+    try {
+      const res = await axios.post("/api/v1/transactions", transaction, config);
+      dispatch({
+        type: "ADD",
+        payload: res.data.data
+      });
+    } catch (error) {
+      dispatch({
+        type: "TRANSACTION_ERROR",
+        payload: error.response.data.error
+      });
+    }
   }
 
   return (
     <GlobalContext.Provider
       value={{
         transactions: state.transactions,
+        error: state.error,
+        loading: state.loading,
+        getTransaction,
         deleteAction,
         addAction
       }}

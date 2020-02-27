@@ -1,9 +1,14 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { TransactionList } from "./TransactionList";
 import { GlobalContext } from "../context/GlobalState";
 
 export const Transactions = () => {
-  const { transactions } = useContext(GlobalContext);
+  const { transactions, getTransaction } = useContext(GlobalContext);
+
+  useEffect(() => {
+    getTransaction();
+  }, []);
+
   return (
     <>
       <h3>History</h3>
